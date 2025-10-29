@@ -7,6 +7,7 @@ import {
   GuildMember,
   User as DiscordUser,
   userMention,
+  chatInputApplicationCommandMention,
 } from "discord.js";
 import { fileURLToPath } from "url";
 import path, { dirname } from "path";
@@ -22,12 +23,13 @@ import MeshPacketCache, {
 } from "./src/MeshPacketCache";
 import meshRedis from "./src/MeshRedis";
 import logger from "./src/Logger";
-import Commands from "./src/Commands";
+import Commands, { CommandType } from "./src/Commands";
 import { nodeHex2id, nodeId2hex, fetchNodeId } from "./src/NodeUtils";
 import { createDiscordMessage } from "./src/DiscordMessageUtils";
 import { fetchUserRoles, fetchDiscordChannel } from "./src/DiscordUtils";
 import { processTextMessage } from "./src/MessageUtils";
 import { handleMqttMessage } from "./src/MqttUtils";
+import Command from "./src/commands/Command";
 
 // generate a pseduo uuid kinda thing to use as an instance id
 const INSTANCE_ID = (() => {
@@ -86,7 +88,7 @@ export { Data, ServiceEnvelope, Position, User };
 const discordMessageIdCache = new FifoCache<string, string>();
 const meshPacketCache = new MeshPacketCache();
 
-const client = new Client({
+const client: Client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
 });
 
@@ -135,6 +137,11 @@ client.once("ready", () => {
     password: "large4cats",
   });
 
+  const getCommand = (commandName: string): CommandType | undefined => {
+    return Commands.filter((command: CommandType) => command.name === commandName)
+      .pop();
+  }
+
   client.on("interactionCreate", async (interaction) => {
     if (interaction.guildId !== DISCORD_GUILD) {
       logger.warn("Received interaction from non-guild");
@@ -143,225 +150,21 @@ client.once("ready", () => {
 
     if (!interaction.isChatInputCommand()) return;
 
-    // Handle the /linknode command.
-    if (interaction.commandName === "linknode") {
-      let nodeId = fetchNodeId(interaction);
+    const commandName: string = interaction.commandName;
+    const command: CommandType | undefined = getCommand(commandName);
 
-      if (!nodeId) {
-        logger.warn("Received /linknode command with no nodeid");
-        await interaction.reply({
-          content: "Please provide a nodeid",
-          ephemeral: true,
-        });
-        return;
-      }
-
-      // Get the invoking user's profile image URL.
-      const profileImageUrl = interaction.user.displayAvatarURL({
-        dynamic: true,
-        size: 1024,
-      });
-
-      // Log the desired output to the console.
-      logger.info(`node: ${nodeId}, profile_image_url: ${profileImageUrl}`);
-
-      const result = await meshRedis.linkNode(nodeId, interaction.user.id);
-
-      logger.info(result);
-
-      // Respond to the command to acknowledge receipt (ephemeral response).
-      await interaction.reply({
-        content: result,
-        flags: MessageFlags.Ephemeral,
-      });
-    } else if (interaction.commandName === "unlinknode") {
-      let nodeId = fetchNodeId(interaction);
-
-      if (!nodeId) {
-        logger.warn("Received /unlinknode command with no nodeid");
-        await interaction.reply({
-          content: "Please provide a nodeid",
-          ephemeral: true,
-        });
-        return;
-      }
-
-      const result = await meshRedis.unlinkNode(nodeId, interaction.user.id);
-      await interaction.reply({
-        content: result,
-        flags: MessageFlags.Ephemeral,
-      });
-    } else if (interaction.commandName === "addtracker") {
-      logger.info(interaction.user);
-      const roles = await fetchUserRoles(guild, interaction.user.id);
-      logger.info(roles);
-      if (roles && (roles.includes("Moderator") || roles.includes("Admin"))) {
-        let nodeId = fetchNodeId(interaction);
-
-        if (!nodeId) {
-          logger.warn("Received /addtracker command with no nodeid");
-          await interaction.reply({
-            content: "Please provide a nodeid",
-            ephemeral: true,
-          });
-          return;
-        }
-
-        meshRedis.addTrackerNode(nodeId);
-
-        await interaction.reply({
-          content: "Node added to tracking list.",
-          flags: MessageFlags.Ephemeral,
-        });
-      } else {
-        await interaction.reply({
-          content: "You do not have permission to use this command",
-          flags: MessageFlags.Ephemeral,
-        });
-        return;
-      }
-    } else if (interaction.commandName === "removetracker") {
-      logger.info(interaction.user);
-      const roles = await fetchUserRoles(guild, interaction.user.id);
-      logger.info(roles);
-      if (roles && (roles.includes("Moderator") || roles.includes("Admin"))) {
-        let nodeId = fetchNodeId(interaction);
-
-        if (!nodeId) {
-          logger.warn("Received /removetracker command with no nodeid");
-          await interaction.reply({
-            content: "Please provide a nodeid",
-            ephemeral: true,
-          });
-          return;
-        }
-
-        meshRedis.removeTrackerNode(nodeId);
-
-        await interaction.reply({
-          content: "Node removed from tracking list",
-          flags: MessageFlags.Ephemeral,
-        });
-      } else {
-        await interaction.reply({
-          content: "You do not have permission to use this command",
-          flags: MessageFlags.Ephemeral,
-        });
-        return;
-      }
-    } else if (interaction.commandName === "addballoon") {
-      logger.info(interaction.user);
-      const roles = await fetchUserRoles(guild, interaction.user.id);
-      logger.info(roles);
-      if (roles && (roles.includes("Moderator") || roles.includes("Admin"))) {
-        let nodeId = fetchNodeId(interaction);
-
-        if (!nodeId) {
-          logger.warn("Received /addballoon command with no nodeid");
-          await interaction.reply({
-            content: "Please provide a nodeid",
-            ephemeral: true,
-          });
-          return;
-        }
-
-        meshRedis.addBalloonNode(nodeId);
-
-        await interaction.reply({
-          content: "Node added to balloon list.",
-          flags: MessageFlags.Ephemeral,
-        });
-      } else {
-        await interaction.reply({
-          content: "You do not have permission to use this command",
-          flags: MessageFlags.Ephemeral,
-        });
-        return;
-      }
-    } else if (interaction.commandName === "removeballoon") {
-      logger.info(interaction.user);
-      const roles = await fetchUserRoles(guild, interaction.user.id);
-      logger.info(roles);
-      if (roles && (roles.includes("Moderator") || roles.includes("Admin"))) {
-        let nodeId = fetchNodeId(interaction);
-
-        if (!nodeId) {
-          logger.warn("Received /removeballoon command with no nodeid");
-          await interaction.reply({
-            content: "Please provide a nodeid",
-            ephemeral: true,
-          });
-          return;
-        }
-
-        meshRedis.removeBalloonNode(nodeId);
-
-        await interaction.reply({
-          content: "Node removed from balloon list",
-          flags: MessageFlags.Ephemeral,
-        });
-      }
-    } else if (interaction.commandName === "bannode") {
-      const roles = await fetchUserRoles(guild, interaction.user.id);
-      if (roles && (roles.includes("Moderator") || roles.includes("Admin"))) {
-        let nodeId = fetchNodeId(interaction);
-
-        if (!nodeId) {
-          logger.warn("Received /bannode command with no nodeid");
-          await interaction.reply({
-            content: "Please provide a nodeid",
-            ephemeral: true,
-          });
-          return;
-        }
-
-        await meshRedis.addBannedNode(nodeId);
-
-        await interaction.reply({
-          content: "Node banned.",
-          flags: MessageFlags.Ephemeral,
-        });
-      } else {
-        await interaction.reply({
-          content: "You do not have permission to use this command",
-          flags: MessageFlags.Ephemeral,
-        });
-        return;
-      }
-    } else if (interaction.commandName === "unbannode") {
-      const roles = await fetchUserRoles(guild, interaction.user.id);
-      if (roles && (roles.includes("Moderator") || roles.includes("Admin"))) {
-        let nodeId = fetchNodeId(interaction);
-
-        if (!nodeId) {
-          logger.warn("Received /unbannode command with no nodeid");
-          await interaction.reply({
-            content: "Please provide a nodeid",
-            ephemeral: true,
-          });
-          return;
-        }
-
-        await meshRedis.removeBannedNode(nodeId);
-
-        await interaction.reply({
-          content: "Node unbanned.",
-          flags: MessageFlags.Ephemeral,
-        });
-      } else {
-        await interaction.reply({
-          content: "You do not have permission to use this command",
-          flags: MessageFlags.Ephemeral,
-        });
-        return;
-      }
+    if (command === undefined) {
+      return;
     }
+
+    (<CommandType>command).class.handle(guild, interaction);
   });
 
-  const processing_timer = setInterval(() => {
+  // Collect packet groups every 5 seconds
+  setInterval(() => {
     const packetGroups = meshPacketCache.getDirtyPacketGroups();
     // logger.info("Processing " + packetGroups.length + " packet groups");
-    packetGroups.forEach((packetGroup) => {
+    packetGroups.forEach((packetGroup: PacketGroup) => {
       // processPacketGroup(packetGroup);
       if (packetGroup.serviceEnvelopes[0].packet?.decoded?.portnum === 3) {
         logger.info("Processing packet group: " + packetGroup.id + " POSITION");
