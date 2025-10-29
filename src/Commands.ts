@@ -1,10 +1,47 @@
 import { ApplicationCommandOptionType } from "discord.js";
+import LinkNodeCommand from "./commands/LinkNodeCommand";
+import Command from "./commands/Command"
+import UnlinkNodeCommand from "./commands/UnlinkNodeCommand";
+import AddTrackerCommand from "./commands/AddTrackerCommand";
+import RemoveTrackerCommand from "./commands/RemoveTrackerCommand";
+import AddBalloonCommand from "./commands/AddBalloonCommand";
+import RemoveBalloonCoomand from "./commands/RemoveBalloonCommand";
+import BanNodeCommand from "./commands/BanNodeCommand";
+import UnbanNodeCommand from "./commands/UnbanNodeCommand";
+import NodesCommand from "./commands/NodesCommand";
 
-const commands = [
+export type CommandType = {
+  name: string;
+  description: string;
+  class: Command;
+  options: OptionType[];
+};
+
+export type OptionType = {
+  name: string;
+  type: ApplicationCommandOptionType;
+  description: string;
+  required: boolean;
+}
+
+const commands: CommandType[] = [
+  {
+    name: "nodes",
+    description: "Claim a node you own, and only ones you own, and link it to your discord",
+    class: new NodesCommand,
+    options: [
+      {
+        name: "user",
+        type: ApplicationCommandOptionType.User,
+        description: "Nodes you own or that someone else owns",
+        required: false,
+      },
+    ],
+  },
   {
     name: "linknode",
-    description:
-      "Claim a node you own, and only ones you own, and link it to your discord",
+    description: "Claim a node you own, and only ones you own, and link it to your discord",
+    class: new LinkNodeCommand,
     options: [
       {
         name: "nodeid",
@@ -17,6 +54,7 @@ const commands = [
   {
     name: "unlinknode",
     description: "Unlink a node from your discord",
+    class: new UnlinkNodeCommand,
     options: [
       {
         name: "nodeid",
@@ -29,6 +67,7 @@ const commands = [
   {
     name: "addtracker",
     description: "Start position updates from node in discord",
+    class: new AddTrackerCommand,
     options: [
       {
         name: "nodeid",
@@ -41,6 +80,7 @@ const commands = [
   {
     name: "removetracker",
     description: "Stop position updates from node in discord",
+    class: new RemoveTrackerCommand,
     options: [
       {
         name: "nodeid",
@@ -53,6 +93,7 @@ const commands = [
   {
     name: "addballoon",
     description: "Start position updates from node in discord",
+    class: new AddBalloonCommand,
     options: [
       {
         name: "nodeid",
@@ -65,6 +106,7 @@ const commands = [
   {
     name: "removeballoon",
     description: "Stop position updates from node in discord",
+    class: new RemoveBalloonCoomand,
     options: [
       {
         name: "nodeid",
@@ -77,6 +119,7 @@ const commands = [
   {
     name: "bannode",
     description: "Ban a node from logger",
+    class: new BanNodeCommand,
     options: [
       {
         name: "nodeid",
@@ -89,6 +132,7 @@ const commands = [
   {
     name: "unbannode",
     description: "Unban a node from logger",
+    class: new UnbanNodeCommand,
     options: [
       {
         name: "nodeid",
