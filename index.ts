@@ -8,6 +8,7 @@ import {
   User as DiscordUser,
   userMention,
   chatInputApplicationCommandMention,
+  Message,
 } from "discord.js";
 import { fileURLToPath } from "url";
 import path, { dirname } from "path";
@@ -20,13 +21,14 @@ import MeshPacketCache, {
   PacketGroup,
 } from "./src/MeshPacketCache";
 import meshRedis from "./src/MeshRedis";
-import meshDb from "./src/MeshDB";
+import meshDB from "./src/MeshDB";
+import config from "./src/Config";
 import logger from "./src/Logger";
-import Commands, { CommandType } from "./src/Commands";
+import { CommandMessageType, CommandType, commands, messageCommands } from "./src/Commands";
 import { fetchDiscordChannel } from "./src/DiscordUtils";
 import { processTextMessage } from "./src/MessageUtils";
 import { handleMqttMessage } from "./src/MqttUtils";
-import meshDB from "./src/MeshDB";
+import LinkCommandMessage from "./src/commands/message/LinkCommandMessage";
 
 // generate a pseduo uuid kinda thing to use as an instance id
 const INSTANCE_ID = (() => {
@@ -86,9 +88,10 @@ const discordMessageIdCache = new FifoCache<string, string>();
 const meshPacketCache = new MeshPacketCache();
 
 const client: Client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
 });
 
+await config.init();
 await meshRedis.init(REDIS_URL);
 await meshDB.init();
 
@@ -103,7 +106,7 @@ const rest = new REST({ version: "10" }).setToken(DISCORD_TOKEN);
     await rest.put(
       Routes.applicationGuildCommands(DISCORD_CLIENT_ID, DISCORD_GUILD),
       {
-        body: Commands,
+        body: commands,
       },
     );
 
@@ -136,10 +139,65 @@ client.once("ready", () => {
   });
 
   const getCommand = (commandName: string): CommandType | undefined => {
-    return Commands.filter((command: CommandType) => command.name === commandName)
+    return commands.filter((command: CommandType) => command.name === commandName)
       .pop();
   }
 
+  const getMessageCommand = (commandName: string): CommandMessageType | undefined => {
+    return messageCommands.filter((command: CommandMessageType) => command.name === commandName)
+      .pop();
+  }
+
+  const getLinkCommand = (commandName: string): LinkCommandMessage | undefined => {
+    let hasCommand = config.content?.availableLinkTypes.includes(commandName);
+
+    if (!hasCommand) {
+      return undefined;
+    }
+
+    return new LinkCommandMessage(commandName);
+  }
+
+  // Message
+  client.on("messageCreate", async (message: Message) => {
+    if (message.guildId !== DISCORD_GUILD) {
+      logger.warn("Received message from non-guild");
+      return;
+    }
+
+    // Ignore messages sent from the bot
+    if (message.author == client.user) {
+      return;
+    }
+
+    let messageContent: string = message.content;
+    if (messageContent.startsWith('!')) {
+      // Remove the !
+      messageContent = messageContent.substring(1, messageContent.length);
+      let messageParts: string[] = messageContent.split(' ');
+
+      // Grab command name and arguments
+      let commandName = messageParts[0];
+      let commandArguments = messageParts.slice(1, messageParts.length);
+
+      // Is this a link command?
+      const linkCommand: LinkCommandMessage | undefined = getLinkCommand(commandName);
+      if (linkCommand !== undefined) {
+        await linkCommand.handle(message.guild, commandArguments, message);
+        return;
+      }
+
+      // Otherwise, is this a generic command?
+      const command: CommandMessageType | undefined = getMessageCommand(commandName);
+      if (command === undefined) {
+        return;
+      }
+
+      (<CommandMessageType>command).class.handle(guild, commandArguments, message);
+    }
+  });
+
+  // Interactions
   client.on("interactionCreate", async (interaction) => {
     if (interaction.guildId !== DISCORD_GUILD) {
       logger.warn("Received interaction from non-guild");

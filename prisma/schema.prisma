@@ -13,15 +13,22 @@ datasource db {
 }
 
 model Node {
-  id                  String      @id
-  longName            String
-  nodeInfo            NodeInfo?
+  id        Int     @id @default(autoincrement())
+  longName  String
+  nodeInfo  NodeInfo?
   discordId String?
 }
 
 model NodeInfo {
-  nodeId    String   @id
-  node      Node     @relation(fields: [nodeId], references: [id])
+  id        Int     @id @default(autoincrement())
+  node      Node    @relation(fields: [id], references: [id])
   hopStart  Int
   updatedAt DateTime
+}
+
+model Links {
+  id        Int     @id @default(autoincrement())
+  url       String  @unique
+  type      String
+  guildId   String  @unique
 }

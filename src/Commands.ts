@@ -9,12 +9,19 @@ import RemoveBalloonCoomand from "./commands/RemoveBalloonCommand";
 import BanNodeCommand from "./commands/BanNodeCommand";
 import UnbanNodeCommand from "./commands/UnbanNodeCommand";
 import NodesCommand from "./commands/NodesCommand";
+import CommandMessage from "./commands/message/CommandMessage";
 
 export type CommandType = {
   name: string;
   description: string;
   class: Command;
   options: OptionType[];
+};
+
+export type CommandMessageType = {
+  name: string;
+  description: string;
+  class: CommandMessage;
 };
 
 export type OptionType = {
@@ -24,7 +31,9 @@ export type OptionType = {
   required: boolean;
 }
 
-const commands: CommandType[] = [
+export const messageCommands: CommandMessageType[] = [];
+
+export const commands: CommandType[] = [
   {
     name: "nodes",
     description: "Claim a node you own, and only ones you own, and link it to your discord",
@@ -143,5 +152,3 @@ const commands: CommandType[] = [
     ],
   },
 ];
-
-export default commands;

@@ -19,6 +19,7 @@ services:
       - REDIS_URL=${REDIS_URL}
       - ENVIRONMENT=${ENVIRONMENT}
       - NODE_INFO_UPDATES=${NODE_INFO_UPDATES}
+      - DATABASE_URL=${DATABASE_URL}
     networks:
       - web
 networks:

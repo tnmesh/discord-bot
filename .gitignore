@@ -133,3 +133,5 @@ dist
 .breakpoints
 /src/generated/prisma
 /prisma/discord.db
+
+/src/protobufs/

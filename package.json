@@ -16,6 +16,7 @@
     "@types/node": "^18.0.6",
     "discord.js": "^14.18.0",
     "mqtt": "^5.10.4",
+    "pagination.djs": "^4.0.18",
     "protobufjs": "^7.4.0",
     "redis": "^4.7.0",
     "tsx": "^4.19.3"
