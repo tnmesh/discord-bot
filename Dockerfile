@@ -9,6 +9,9 @@ RUN npm install
 
 COPY . .
 
+RUN npx prisma generate
+RUN npx migrate dev
+
 RUN apt-get update -y && apt-get install -y openssl
 RUN git clone https://github.com/meshtastic/protobufs.git src/protobufs
 
