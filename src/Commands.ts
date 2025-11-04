@@ -34,19 +34,19 @@ export type OptionType = {
 export const messageCommands: CommandMessageType[] = [];
 
 export const commands: CommandType[] = [
-  {
-    name: "nodes",
-    description: "Claim a node you own, and only ones you own, and link it to your discord",
-    class: new NodesCommand,
-    options: [
-      {
-        name: "user",
-        type: ApplicationCommandOptionType.User,
-        description: "Nodes you own or that someone else owns",
-        required: false,
-      },
-    ],
-  },
+  // {
+  //   name: "nodes",
+  //   description: "Claim a node you own, and only ones you own, and link it to your discord",
+  //   class: new NodesCommand,
+  //   options: [
+  //     {
+  //       name: "user",
+  //       type: ApplicationCommandOptionType.User,
+  //       description: "Nodes you own or that someone else owns",
+  //       required: false,
+  //     },
+  //   ],
+  // },
   {
     name: "linknode",
     description: "Claim a node you own, and only ones you own, and link it to your discord",
