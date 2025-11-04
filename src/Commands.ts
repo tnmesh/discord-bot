@@ -10,6 +10,7 @@ import BanNodeCommand from "./commands/BanNodeCommand";
 import UnbanNodeCommand from "./commands/UnbanNodeCommand";
 import NodesCommand from "./commands/NodesCommand";
 import CommandMessage from "./commands/message/CommandMessage";
+import MqttCommand from "./commands/message/MqttCommand";
 
 export type CommandType = {
   name: string;
@@ -31,7 +32,13 @@ export type OptionType = {
   required: boolean;
 }
 
-export const messageCommands: CommandMessageType[] = [];
+export const messageCommands: CommandMessageType[] = [
+  {
+    name: "mqtt",
+    description: "View MQTT details",
+    class: new MqttCommand
+  }
+];
 
 export const commands: CommandType[] = [
   // {
