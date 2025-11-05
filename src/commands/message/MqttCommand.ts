@@ -1,7 +1,5 @@
 import { EmbedBuilder, Guild, Message, TextChannel } from "discord.js";
 import CommandMessage from "./CommandMessage";
-import meshDB from "../../MeshDB";
-import { fetchUserRoles } from "../../DiscordUtils";
 
 export default class MqttCommand extends CommandMessage {
 
