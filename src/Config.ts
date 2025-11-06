@@ -3,6 +3,38 @@ import logger from './Logger';
 
 interface ConfigInterface {
     availableLinkTypes: string[];
+    guilds: GuildConfigMap[];
+    mqtt: MqttConfigInterface;
+    redis: RedisConfigInterface;
+    discord: DiscordConfigInterface;
+}
+
+interface DiscordConfigInterface {
+    token: string;
+    clientId: string;
+}
+
+interface MqttConfigInterface {
+    host: string;
+    port: number;
+    username: string;
+    password: string;
+}
+
+interface RedisConfigInterface {
+    dsn: string;
+}
+
+interface GuildConfigMap {
+    [guildId: string]: GuildConfigInterface;
+}
+
+interface GuildConfigInterface {
+    guildId: string;
+    channelLongFast: string;
+    channelMediumSlow: string;
+    channelHighAltitudeBalloon: string;
+    topics: string[];
 }
 
 class Config {
@@ -13,9 +45,22 @@ class Config {
             const fileContent = await fsPromises.readFile("./config.json", 'utf-8');
             this.content = JSON.parse(fileContent) as ConfigInterface;
 
-            logger.info('Loading config.json');
+            // this.validateConfiguration();
+            logger.info('Loaded config.json');
         } catch (error: any) {
             logger.error(error)
+        }
+    }
+
+    public validateConfiguration() {
+        if (this.content === undefined) {
+            throw new Error('Missing config.json');
+        }
+
+        // if (thisc)
+
+        if (this.content.guilds.length === 0) {
+            throw new Error('No configured guilds. Exiting');
         }
     }
 }
