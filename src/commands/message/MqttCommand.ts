@@ -16,7 +16,6 @@ export default class MqttCommand extends CommandMessage {
         }
 
         let channel: TextChannel = <TextChannel>message.channel;
-        let subCommand = commandArgs[0] ?? undefined;
 
         let embed = (new EmbedBuilder())
             .setTitle('Current MQTT Details')
