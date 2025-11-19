@@ -1,8 +1,10 @@
-import { ChatInputCommandInteraction, CacheType, MessageFlags, Guild } from "discord.js";
+import { ChatInputCommandInteraction, CacheType, MessageFlags, Guild, userMention } from "discord.js";
 import Command from "./Command";
 import logger from "../Logger";
 import meshRedis from "../../src/MeshRedis";
 import { fetchNodeId } from "../NodeUtils";
+import meshDB from "../MeshDB";
+import { Flag, Node } from "generated/prisma/client";
 
 export default class LinkNodeCommand extends Command {
 
@@ -22,23 +24,34 @@ export default class LinkNodeCommand extends Command {
             return;
         }
 
-        // Get the invoking user's profile image URL.
-        const profileImageUrl = interaction.user.displayAvatarURL({
-            // dynamic: true,
-            size: 1024,
-        });
+        const nodeHasOwner: boolean = await this.nodeHasOwner(nodeId);
 
-        // Log the desired output to the console.
-        logger.info(`node: ${nodeId}, profile_image_url: ${profileImageUrl}`);
+        if (nodeHasOwner === true) {
+            await interaction.reply({
+                content: "This node is already linked to an account",
+                flags: MessageFlags.Ephemeral,
+            });
+            return;
+        }
 
-        const result = await meshRedis.linkNode(nodeId, interaction.user.id);
-
-        logger.info(result);
-
-        // Respond to the command to acknowledge receipt (ephemeral response).
-        await interaction.reply({
-            content: result,
-            flags: MessageFlags.Ephemeral,
+        await meshDB.client.node.upsert({
+            update: {
+                discordId: {
+                    set: interaction.user.id,
+                }
+            },
+            create: {
+                discordId: interaction.user.id,
+                hexId: nodeId
+            },
+            where: {
+                hexId: nodeId
+            }
+        }).then(() => {
+            interaction.reply({
+                content: `Node linked to ${userMention(interaction.user.id)}`,
+                flags: MessageFlags.Ephemeral,
+            });
         });
     }
 }

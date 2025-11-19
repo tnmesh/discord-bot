@@ -14,6 +14,11 @@ import MqttCommand from "./commands/message/MqttCommand";
 import TestCommand from "./commands/TestCommand";
 import WhoisCommand from "./commands/WhoisCommand";
 import WhoisMessageCommand from "./commands/message/WhoisMessageCommand";
+import AnalyticsCommand from "./commands/AnalyticsCommand";
+import MallaCommand from "@commands/malla/MallaCommand";
+import PositionCommand from "@commands/PositionCommand";
+import { Flags } from "Flags";
+import FlagCommand from "@commands/FlagCommand";
 
 export type CommandType = {
   name: string;
@@ -30,9 +35,10 @@ export type CommandMessageType = {
 
 export type OptionType = {
   name: string;
-  type: ApplicationCommandOptionType;
+  type?: ApplicationCommandOptionType;
   description: string;
-  required: boolean;
+  required?: boolean;
+  choices?: { name: string; value: string }[];
 }
 
 export const messageCommands: CommandMessageType[] = [
@@ -166,6 +172,127 @@ export const commands: CommandType[] = [
       },
     ],
   },
+  {
+    name: "analytics",
+    description: "View analytics of the mesh network (powered by Malla)",
+    class: new AnalyticsCommand,
+    options: [],
+  },
+  {
+    name: "nodes",
+    description: "View information all nodes or those belonging to a user",
+    class: new NodesCommand,
+    options: [
+      {
+        name: "user",
+        type: ApplicationCommandOptionType.User,
+        description: "The discord user to view nodes for",
+        required: false,
+      },
+    ],
+  },
+  // {
+  //   name: "position",
+  //   description: "Start position updates from node in discord",
+  //   class: new PositionCommand,
+  //   options: [
+  //     {
+  //       name: "nodeid",
+  //       type: ApplicationCommandOptionType.String,
+  //       description: "The hex or integer node ID to start tracking",
+  //       required: true,
+  //     },
+  //     {
+  //       name: "command",
+  //       type: ApplicationCommandOptionType.String,
+  //       description: "The hex or integer node ID to start tracking",
+  //       required: true,
+  //       choices: [
+  //         {
+  //           name: 'disable',
+  //           value: 'disable'
+  //         },
+  //         {
+  //           name: 'enable',
+  //           value: 'enable'
+  //         },
+  //         // {
+  //         //   name: 'show',
+  //         //   value: 'show'
+  //         // },
+  //         {
+  //           name: 'status',
+  //           value: 'status'
+  //         },
+  //       ],
+  //     },
+  //   ]
+  // },
+  {
+    name: "flags",
+    description: "Set flags for your nodes",
+    class: new FlagCommand,
+    options: [
+      {
+        name: "nodeid",
+        type: ApplicationCommandOptionType.String,
+        description: "The hex or integer node ID to start tracking",
+        required: true,
+      },
+      {
+        name: "command",
+        type: ApplicationCommandOptionType.String,
+        description: "The hex or integer node ID to start tracking",
+        required: true,
+        choices: [
+          {
+            name: 'set',
+            value: 'set'
+          },
+          {
+            name: 'get',
+            value: 'get'
+          },
+        ],
+      },
+      {
+        name: "key",
+        type: ApplicationCommandOptionType.String,
+        description: "The hex or integer node ID to start tracking",
+        required: true,
+        choices: Flags.getFlags().map((properties) => {
+          return {
+            name: properties.key,
+            value: properties.key
+          }
+        })
+      },
+      {
+        name: "value",
+        type: ApplicationCommandOptionType.String,
+        description: "The value for the key",
+        required: false,
+      },
+    ],
+  }
+  // {
+  //   name: "malla",
+  //   description: "Access Malla through it's API",
+  //   class: new MallaCommand,
+  //   options: MallaCommand.options,
+  // options: [
+  //   {
+  //     name: "bob",
+  //     type: ApplicationCommandOptionType.Subcommand,
+  //     description: "The discord user to view nodes for"
+  //   },
+  //   {
+  //     name: "saget",
+  //     type: ApplicationCommandOptionType.Subcommand,
+  //     description: "The discord user to view nodes for"
+  //   },
+  // ],
+  // },
   // {
   //   name: "test",
   //   description: "Test Command",

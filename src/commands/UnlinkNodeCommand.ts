@@ -1,8 +1,9 @@
-import { ChatInputCommandInteraction, CacheType, MessageFlags, Guild } from "discord.js";
+import { ChatInputCommandInteraction, CacheType, MessageFlags, Guild, userMention } from "discord.js";
 import Command from "./Command";
 import logger from "../Logger";
-import meshRedis from "../../src/MeshRedis";
 import { fetchNodeId } from "../NodeUtils";
+import meshDB from "../MeshDB";
+import { Flag, Node } from "generated/prisma/client";
 
 export default class UnlinkNodeCommand extends Command {
 
@@ -22,10 +23,37 @@ export default class UnlinkNodeCommand extends Command {
             return;
         }
 
-        const result = await meshRedis.unlinkNode(nodeId, interaction.user.id);
-        await interaction.reply({
-            content: result,
-            flags: MessageFlags.Ephemeral,
+        const nodeHasOwner: boolean = await this.nodeHasOwner(nodeId);
+
+        if (nodeHasOwner === true) {
+            await interaction.reply({
+                content: "This node is already linked to an account",
+                flags: MessageFlags.Ephemeral,
+            });
+            return;
+        }
+
+        await meshDB.client.node.update({
+            data: {
+                discordId: null
+            },
+            where: {
+                hexId: nodeId
+            }
+        }).then(() => {
+            interaction.reply({
+                content: `Node unlinked from ${userMention(interaction.user.id)}`,
+                flags: MessageFlags.Ephemeral,
+            });
+
+            // maybe instead reset flags back to defaults
+            meshDB.client.flag.deleteMany({
+                where: {
+                    node: {
+                        hexId: nodeId
+                    }
+                }
+            })
         });
     }
 }

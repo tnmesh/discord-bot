@@ -3,6 +3,12 @@ import { nodeHex2id, nodeId2hex } from "./NodeUtils";
 import meshRedis from "./MeshRedis";
 import logger from "./Logger";
 import { DecodedPosition, decodedPositionToString, PacketGroup } from "./MeshPacketCache";
+import { Position } from "..";
+import PositionCommand from "@commands/PositionCommand";
+import meshDB from "MeshDB";
+import { Flag, Node } from "generated/prisma/client";
+import { FlagRepository } from "@repositories/FlagRepository";
+import { FlagProperties, Flags } from "Flags";
 
 export const createDiscordMessage = async (packetGroup: PacketGroup, text: string, balloonNode: boolean, client: Client, guild: Guild) => {
   try {
@@ -69,42 +75,19 @@ export const createDiscordMessage = async (packetGroup: PacketGroup, text: strin
 
     const infoFields: any = [];
 
+    let mapImageUrl = "";
     let mapUrl = "";
 
-    if (portNum === 3) {
-      const position = Position.decode(
-        packetGroup.serviceEnvelopes[0].packet.decoded.payload,
-      ) as DecodedPosition;
+    let lastPosition = await meshRedis.getLastPosition(from);
+    if (lastPosition) {
+      lastPosition = JSON.parse(lastPosition);
+      logger.info(`Found last position for ${from}`);
 
-      infoFields.push({
-        name: "Latitude",
-        value: `${position.latitudeI / 10000000}`,
-        inline: true,
-      });
-      infoFields.push({
-        name: "Longitude",
-        value: `${position.longitudeI / 10000000}`,
-        inline: true,
-      });
-      if (position.altitude) {
-        infoFields.push({
-          name: "Altitude",
-          value: `${position.altitude}m`,
-          inline: true,
-        });
-      }
-
-      logger.info(position);
-
-      try {
-        msgText = decodedPositionToString(position);
-      } catch (e) {
-        logger.error(e);
-      }
-      mapUrl = `https://api.smerty.org/api/v1/maps/static?lat=${position.latitudeI / 10000000}&lon=${position.longitudeI / 10000000}&width=400&height=400&zoom=12`;
+      mapImageUrl = `https://api.smerty.org/api/v1/maps/static?lat=${lastPosition.latitude / 10000000}&lon=${lastPosition.longitude / 10000000}&width=400&height=100&zoom=12`;
+      mapUrl = `https://map.tnmesh.org/?node_id=${nodeHex2id(from)}&zoom=13`
+      logger.info(mapImageUrl)
+      logger.info(mapUrl)
     }
-
-    logger.info(`mapUrl: ${mapUrl}`);
 
     if (ownerField) {
       infoFields.push({
@@ -275,9 +258,11 @@ export const createDiscordMessage = async (packetGroup: PacketGroup, text: strin
       ],
     };
 
-    if (mapUrl) {
+    const showPosition = await canShowPosition(nodeIdHex);
+
+    if (mapImageUrl && showPosition) {
       content.embeds[0].image = {
-        url: mapUrl,
+        url: mapImageUrl,
       };
     }
 
@@ -286,3 +271,29 @@ export const createDiscordMessage = async (packetGroup: PacketGroup, text: strin
     logger.error("Error: " + String(err));
   }
 };
+
+async function canShowPosition(nodeId: string): Promise<boolean> {
+  const node: Node = await meshDB.client.node.findFirst({
+    where: {
+      hexId: nodeId
+    }
+  })
+
+  if (!node) {
+    return false;
+  }
+
+  const flag: Flag = await FlagRepository.getFlag(node, Flags.SHOW_POSITION.key);
+  if (!flag) {
+    const flagProperties: FlagProperties = Flags.getFlagProperties(Flags.SHOW_POSITION.key);
+
+    return flagProperties.default as boolean ?? false;
+  }
+
+  // type check since flag values are stored as Json
+  if (typeof flag.value === 'boolean') {
+    return flag.value;
+  }
+
+  return false;
+}

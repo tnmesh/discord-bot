@@ -5,6 +5,7 @@ import meshRedis from "./MeshRedis";
 import { nodeId2hex } from "./NodeUtils";
 import logger from "./Logger";
 import { Message } from "protobufjs";
+import meshDB from "MeshDB";
 
 const handleMqttMessage = async (topic, message, MQTT_TOPICS, meshPacketCache, NODE_INFO_UPDATES, MQTT_BROKER_URL) => {
   try {
@@ -46,29 +47,56 @@ const handleMqttMessage = async (topic, message, MQTT_TOPICS, meshPacketCache, N
               envelope.packet.decoded = decoded;
             }
           }
+
           const portnum = envelope.packet?.decoded?.portnum;
+          const from = envelope.packet.from.toString(16);
+          logger.info(`from: ${from}`);
+
+          const exists = await meshDB.client.node.findFirst({
+            where: {
+              hexId: from
+            }
+          });
+
+          if (!exists) {
+            await meshDB.client.node.create({
+              data: {
+                hexId: from
+              }
+            });
+          }
+
           if (portnum === 1) {
             meshPacketCache.add(envelope, topic, MQTT_BROKER_URL);
           } else if (portnum === 3) {
-            logger.info('POSITION_APP');
-            const from = envelope.packet.from.toString(16);
-            const isTrackerNode = await meshRedis.isTrackerNode(from);
-            const isBalloonNode = await meshRedis.isBalloonNode(from);
-            if (!isTrackerNode && !isBalloonNode) {
+            // const from = envelope.packet.from.toString(16);
+            logger.info(`POSITION_APP ${from}`);
+
+            const position: Message = Position.decode(envelope.packet.decoded.payload);
+
+            if (!position || (!position.latitudeI && !position.longitudeI)) {
               return;
             }
-            const position = Position.decode(envelope.packet.decoded.payload);
-            if (!position.latitudeI && !position.longitudeI) {
-              return;
-            }
-            meshPacketCache.add(envelope, topic, MQTT_BROKER_URL);
+
+            await meshRedis.setLastPosition(from, position.latitudeI, position.longitudeI);
+            // meshPacketCache.add(envelope, topic, MQTT_BROKER_URL);
           } else if (portnum === 4) {
             if (!NODE_INFO_UPDATES) {
               logger.info("Node info updates disabled");
               return;
             }
             const user = User.decode(envelope.packet.decoded.payload);
-            const from = nodeId2hex(envelope.packet.from);
+            // const from = nodeId2hex(envelope.packet.from);
+
+            await meshDB.client.node.update({
+              data: {
+                longName: user.longName,
+              },
+              where: {
+                hexId: from
+              }
+            });
+
             meshRedis.updateNodeDB(
               from,
               user.longName,

@@ -1,7 +1,5 @@
 
 import { PrismaClient } from "./generated/prisma/client";
-import logger from "./Logger";
-
 
 class MeshDB {
     client: PrismaClient;

@@ -137,3 +137,5 @@ dist
 /src/protobufs/
 config.json
 config.yml
+
+scripts/
