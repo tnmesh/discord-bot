@@ -1,5 +1,5 @@
 import { createClient, RedisClientType } from "redis";
-import { nodeId2hex } from "./NodeUtils";
+import { nodeId2hex, validateNodeId } from "./NodeUtils";
 import logger from "./Logger";
 
 class MeshRedis {
@@ -325,6 +325,52 @@ class MeshRedis {
     } catch (err) {
       logger.error(err.message);
       return false;
+    }
+  }
+
+  async setLastPosition(hexNodeId: string, latitude: number, longitude: number) {
+    try {
+      hexNodeId = validateNodeId(hexNodeId);
+
+      if (!hexNodeId) {
+        return false;
+      }
+
+      await this.redisClient.set(
+        `node:${hexNodeId}:position`,
+        JSON.stringify(
+          {
+            latitude: latitude,
+            longitude: longitude
+          }
+        ), {
+          EX: 60 * 30 // 30 minute expiration
+        }
+      );
+    } catch (err) {
+      logger.error(err.message);
+      return false;
+    }
+  }
+
+  async getLastPosition(hexNodeId: string): Promise<string | boolean | null> {
+    try {
+      hexNodeId = validateNodeId(hexNodeId);
+
+      if (!hexNodeId) {
+        return false;
+      }
+
+      const position = await this.redisClient.get(`node:${hexNodeId}:position`);
+
+      if (!position) {
+        return null;
+      }
+
+      return position;
+    } catch (err) {
+      logger.error(err.message);
+      return null;
     }
   }
 }

@@ -102,7 +102,7 @@ const rest = new REST({ version: "10" }).setToken(DISCORD_TOKEN);
   try {
     logger.info("Started refreshing application (/) commands.");
 
-    // Register the command for a specific guild (for development, guild commands update faster).
+    Register the command for a specific guild (for development, guild commands update faster).
     await rest.put(
       Routes.applicationGuildCommands(DISCORD_CLIENT_ID, DISCORD_GUILD),
       {

@@ -1,0 +1,8 @@
+-- CreateTable
+CREATE TABLE "Flag" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "nodeId" INTEGER NOT NULL,
+    "key" TEXT NOT NULL,
+    "value" JSONB NOT NULL,
+    CONSTRAINT "Flag_nodeId_fkey" FOREIGN KEY ("nodeId") REFERENCES "Node" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);

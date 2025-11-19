@@ -1,6 +1,6 @@
 import logger from "../Logger";
 
-interface ApiOptions {
+export interface ApiOptions {
   headers?: Record<string, string>;
 }
 

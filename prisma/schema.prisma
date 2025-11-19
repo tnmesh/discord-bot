@@ -14,9 +14,21 @@ datasource db {
 
 model Node {
   id        Int     @id @default(autoincrement())
-  longName  String
+  longName  String?
+  hexId     String  @unique
   nodeInfo  NodeInfo?
   discordId String?
+  flags     Flag[]
+}
+
+model Flag {
+  node      Node   @relation(fields: [nodeId], references: [id])
+  nodeId    Int
+  key       String
+  value     Json
+  readOnly  Boolean @default(false)
+
+  @@id([nodeId, key])
 }
 
 model NodeInfo {

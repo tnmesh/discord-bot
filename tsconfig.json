@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./src",
+    "paths": {
+      "@commands/*": ["commands/*"],
+      "@repositories/*": ["repositories/*"],
+    },
+  },
+  "include": ["src/**/*"]
+}

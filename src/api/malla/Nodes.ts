@@ -22,22 +22,6 @@ export interface NodeSearchResponse {
     total_count: number;
 }
 
-export async function searchNode(nodeId: string | null) {
-    if (nodeId === undefined) {
-        return null;
-    }
-
-    try {
-        let response = await mallaAPI.get<NodeSearchResponse>(`/nodes/search?q=${nodeId}`);
-
-        // response is invalid
-        if (response === null) return null;
-
-        // no nodes found
-        if (response.total_count === 0) return false;
-
-        return response;
-    } catch (error) {
-        // logger.error(error);
-    }
+export async function searchNode(nodeId: string) {
+    return await mallaAPI.get<NodeSearchResponse>(`/nodes/search?q=${nodeId}`);
 }
