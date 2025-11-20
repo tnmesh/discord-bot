@@ -1,4 +1,4 @@
-import { CacheType, ChatInputCommandInteraction, Guild, MessageFlags, User, userMention } from "discord.js";
+import { CacheType, ChatInputCommandInteraction, MessageFlags, userMention } from "discord.js";
 import { fetchNodeId as _fetchNodeId } from "../NodeUtils";
 import { Node } from "generated/prisma/client";
 import meshDB from "MeshDB";
@@ -13,10 +13,9 @@ export default abstract class Command {
   /**
    * Handle a guild command interaction.
    * @async
-   * @param guild
    * @param interaction
    */
-  abstract handle(guild: Guild, interaction: ChatInputCommandInteraction): Promise<void>;
+  abstract handle(interaction: ChatInputCommandInteraction): Promise<void>;
 
   /**
    * Fetch an API call using a callback. If the API request fails, the interaction is replied back

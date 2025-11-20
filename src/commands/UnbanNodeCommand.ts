@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, CacheType, MessageFlags, Guild } from "discord.js";
+import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
 import Command from "./Command";
 import logger from "../Logger";
 import meshRedis from "../MeshRedis";
@@ -11,8 +11,8 @@ export default class UnbanNodeCommand extends Command {
         super("unbannode");
     }
 
-    public async handle(guild: Guild, interaction: ChatInputCommandInteraction): Promise<void> {
-        const roles = await fetchUserRoles(guild, interaction.user.id);
+    public async handle(interaction: ChatInputCommandInteraction): Promise<void> {
+        const roles = await fetchUserRoles(interaction.guild, interaction.user.id);
         if (roles && (roles.includes("Moderator") || roles.includes("Admin"))) {
             let nodeId = fetchNodeId(interaction);
 

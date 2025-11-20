@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, Guild } from "discord.js";
+import { ChatInputCommandInteraction } from "discord.js";
 import Command from "./Command";
 
 export default class PacketCommand extends Command {
@@ -7,7 +7,7 @@ export default class PacketCommand extends Command {
         super("packet");
     }
 
-    public async handle(guild: Guild, interaction: ChatInputCommandInteraction): Promise<void> {
+    public async handle(interaction: ChatInputCommandInteraction): Promise<void> {
 
 
     }

@@ -1,9 +1,8 @@
-import { ChatInputCommandInteraction, CacheType, MessageFlags, Guild, userMention } from "discord.js";
+import { ChatInputCommandInteraction, MessageFlags, userMention } from "discord.js";
 import Command from "./Command";
 import logger from "../Logger";
 import { fetchNodeId } from "../NodeUtils";
 import meshDB from "../MeshDB";
-import { Flag, Node } from "generated/prisma/client";
 
 export default class UnlinkNodeCommand extends Command {
 
@@ -11,7 +10,7 @@ export default class UnlinkNodeCommand extends Command {
         super("unlinknode");
     }
 
-    public async handle(guild: Guild, interaction: ChatInputCommandInteraction): Promise<void> {
+    public async handle(interaction: ChatInputCommandInteraction): Promise<void> {
         let nodeId = fetchNodeId(interaction);
 
         if (!nodeId) {

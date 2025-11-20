@@ -1,8 +1,5 @@
 import { ChatInputCommandInteraction, CacheType, MessageFlags, Guild } from "discord.js";
 import Command from "./Command";
-import logger from "../Logger";
-import meshRedis from "../../src/MeshRedis";
-import { fetchNodeId } from "../NodeUtils";
 
 export default class NodesCommand extends Command {
 
@@ -10,7 +7,7 @@ export default class NodesCommand extends Command {
         super("nodes");
     }
 
-    public async handle(guild: Guild, interaction: ChatInputCommandInteraction<CacheType>): Promise<void> {
+    public async handle(interaction: ChatInputCommandInteraction<CacheType>): Promise<void> {
         let userArg = interaction.options.getUser('user');
 
         if (userArg === null) {

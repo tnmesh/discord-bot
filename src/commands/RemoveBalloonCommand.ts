@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, CacheType, MessageFlags, Guild } from "discord.js";
+import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
 import Command from "./Command";
 import logger from "../Logger";
 import meshRedis from "../MeshRedis";
@@ -11,9 +11,9 @@ export default class RemoveBalloonCoomand extends Command {
         super("removeballoon");
     }
 
-    public async handle(guild: Guild, interaction: ChatInputCommandInteraction): Promise<void> {
+    public async handle(interaction: ChatInputCommandInteraction): Promise<void> {
         // logger.info(interaction.user);
-        const roles = await fetchUserRoles(guild, interaction.user.id);
+        const roles = await fetchUserRoles(interaction.guild, interaction.user.id);
         // logger.info(roles);
         if (roles && (roles.includes("Moderator") || roles.includes("Admin"))) {
             let nodeId = fetchNodeId(interaction);

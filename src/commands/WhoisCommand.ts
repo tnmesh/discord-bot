@@ -1,10 +1,9 @@
-import { ChatInputCommandInteraction, MessageFlags, Guild, EmbedBuilder, User, userMention, time } from "discord.js";
+import { ChatInputCommandInteraction, MessageFlags, EmbedBuilder, User, userMention, time } from "discord.js";
 import Command from "./Command";
 import { NodeSearchNodeResponse, NodeSearchResponse, searchNode } from "../api/malla/Nodes";
 import meshDB from "../MeshDB";
 import logger from "../Logger";
 import { validateNodeId } from "../NodeUtils";
-import meshRedis from "MeshRedis";
 import { Node } from "generated/prisma/client";
 
 export default class WhoisCommand extends Command {
@@ -13,7 +12,7 @@ export default class WhoisCommand extends Command {
         super("whois");
     }
 
-    public async handle(guild: Guild, interaction: ChatInputCommandInteraction): Promise<void> {
+    public async handle(interaction: ChatInputCommandInteraction): Promise<void> {
         const nodeId = this.fetchNodeId(interaction);
 
         if (nodeId === null) {
@@ -42,7 +41,7 @@ export default class WhoisCommand extends Command {
 
         const nodeOwner = await this.getNodeOwner(node.hex_id.replace('!', ''));
         if (nodeOwner) {
-            const user: User = await guild.client.users.fetch(nodeOwner);
+            const user: User = await interaction.guild.client.users.fetch(nodeOwner);
 
             fields.unshift(
                 { name: 'Owner', value: userMention(user.id), inline: true }

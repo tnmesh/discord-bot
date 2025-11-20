@@ -1,9 +1,8 @@
-import { ChatInputCommandInteraction, CacheType, MessageFlags, Guild, ApplicationCommandOptionType } from "discord.js";
+import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
 import Command from "@commands/Command";
 import meshDB from "MeshDB";
 import { Flag, Node } from "generated/prisma/client";
 import { FlagProperties, Flags, FlagValue } from "Flags";
-import logger from "Logger";
 import { FlagRepository } from "@repositories/FlagRepository";
 
 const typeMap = {
@@ -23,7 +22,7 @@ export default class FlagCommand extends Command {
         super("flag");
     }
 
-    public async handle(guild: Guild, interaction: ChatInputCommandInteraction): Promise<void> {
+    public async handle(interaction: ChatInputCommandInteraction): Promise<void> {
         const nodeId = this.fetchNodeId(interaction);
         const command = interaction.options.getString('command');
 

@@ -9,7 +9,7 @@ export default class TestCommand extends Command {
         super("test");
     }
 
-    public async handle(guild: Guild, interaction: ChatInputCommandInteraction): Promise<void> {
+    public async handle(interaction: ChatInputCommandInteraction): Promise<void> {
         const stats = await fetchStats();
 
         logger.info(stats?.active_nodes_24h);
