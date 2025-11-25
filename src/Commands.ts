@@ -180,13 +180,13 @@ export const commands: CommandType[] = [
       {
         name: "nodeid",
         type: ApplicationCommandOptionType.String,
-        description: "The hex or integer node ID to start tracking",
+        description: "The hex or integer node ID to manage flags for",
         required: true,
       },
       {
         name: "command",
         type: ApplicationCommandOptionType.String,
-        description: "The hex or integer node ID to start tracking",
+        description: "The flag command to perform",
         required: true,
         choices: [
           {
@@ -202,7 +202,7 @@ export const commands: CommandType[] = [
       {
         name: "key",
         type: ApplicationCommandOptionType.String,
-        description: "The hex or integer node ID to start tracking",
+        description: "The flag key to manage",
         required: true,
         choices: Flags.getFlags().map((properties) => {
           return {
@@ -214,7 +214,7 @@ export const commands: CommandType[] = [
       {
         name: "value",
         type: ApplicationCommandOptionType.String,
-        description: "The value for the key",
+        description: "The value for the flag key",
         required: false,
       },
     ],
