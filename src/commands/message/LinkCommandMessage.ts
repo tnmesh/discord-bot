@@ -28,7 +28,7 @@ export default class LinkCommandMessage extends CommandMessage {
         const roles: string[] = await fetchUserRoles(guild, message.author.id);
 
         if (roles.length === 0 || !roles.includes("Admin")) {
-            await channel.send('You do not have permi2ssion to use this command');
+            await channel.send('You do not have permission to use this command');
             return;
         }
 
