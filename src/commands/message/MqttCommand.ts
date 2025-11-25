@@ -25,7 +25,10 @@ export default class MqttCommand extends CommandMessage {
                 { name: 'MQTT Password', value: 'meshville', inline: true },
                 { name: '`Primary` Channel Uplink', value: 'enabled' },
                 { name: 'OK to MQTT', value: 'enabled' },
-                { name: 'Root Topic', value: 'msh/US' },
+                { name: 'State Topic', value: 'msh/US/TN', inline: true },
+                { name: 'West Topic', value: 'msh/US/TN/West', inline: true },
+                { name: 'Middle Topic', value: 'msh/US/TN/Middle', inline: true },
+                { name: 'East Topic', value: 'msh/US/TN/East', inline: true },
             );
 
         await channel.send({ embeds: [embed] });
