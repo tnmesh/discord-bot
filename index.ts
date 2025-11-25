@@ -213,7 +213,7 @@ client.once("ready", () => {
       return;
     }
 
-    (<CommandType>command).class.handle(guild, interaction);
+    (<CommandType>command).class.handle(interaction);
   });
 
   // Collect packet groups every 5 seconds
