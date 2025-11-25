@@ -4,9 +4,11 @@ import meshRedis from "./MeshRedis";
 import logger from "./Logger";
 import { PacketGroup } from "./MeshPacketCache";
 import { Client, Guild } from "discord.js";
+import config from "Config";
 
 const processTextMessage = async (packetGroup: PacketGroup, client: Client, guild: Guild, discordMessageIdCache, habChannel, msChannel, lfChannel) => {
   const packet = packetGroup.serviceEnvelopes[0].packet;
+  const packetTopic = packetGroup.serviceEnvelopes[0].topic;
   let text = packet.decoded.payload.toString();
   const to = nodeId2hex(packet.to);
   const portNum = packet?.decoded?.portnum;
@@ -24,6 +26,25 @@ const processTextMessage = async (packetGroup: PacketGroup, client: Client, guil
     logger.info(
       `MessageId: ${packetGroup.id} Not to public channel: ${packetGroup.serviceEnvelopes.map((envelope) => envelope.topic)}`,
     );
+    return;
+  }
+
+  const topicsForGuild: [] = config.content.discord.guilds[guild.id].topics ?? null;
+  logger.info(topicsForGuild);
+  logger.info(packetTopic);
+
+  if (topicsForGuild === null) {
+    logger.info('no topics for guild')
+    return;
+  }
+
+  let hasTopic = false;
+  topicsForGuild.forEach((topic) => {
+    hasTopic ||= packetTopic.startsWith(topic);
+  });
+
+  if (!hasTopic) {
+    logger.info(`No topic found for packet_topic=${packetTopic} on ${guild.id}`);
     return;
   }
 
