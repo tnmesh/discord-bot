@@ -7,6 +7,7 @@ interface ConfigInterface {
     availableLinkTypes: string[];
     mqtt: MqttConfigInterface;
     redis: RedisConfigInterface;
+    version: string;
 }
 
 interface DiscordConfigInterface {
@@ -47,7 +48,7 @@ class Config {
             this.content = JSON.parse(fileContent) as ConfigInterface;
 
             // this.validateConfiguration();
-            logger.info('Loaded config.json');
+            logger.info(`Version: ${config.content.version}`);
             logger.info(`Environment: ${this.content.environment}`);
         } catch (error: any) {
             logger.error(error)

@@ -9,11 +9,11 @@ RUN npm install
 
 COPY . .
 
-RUN npx prisma generate
-RUN npx migrate dev
+# RUN npx prisma generate
+# RUN npx migrate dev
 
-RUN apt-get update -y && apt-get install -y openssl
-RUN git clone https://github.com/meshtastic/protobufs.git src/protobufs
+# RUN apt-get update -y && apt-get install -y openssl
+# RUN git clone https://github.com/meshtastic/protobufs.git src/protobufs
 
 # Stage 2: Create the final image
 FROM node:20-slim
