@@ -60,6 +60,11 @@ export default class FlagCommand extends Command {
      */
     private static async setCommand(nodeId: string, interaction: ChatInputCommandInteraction): Promise<void> {
         const node = await FlagCommand.getNodeForUser(nodeId, interaction);
+
+        if (!node) {
+            return;
+        }
+
         const key = interaction.options.getString('key');
 
         let value: FlagValue | null = null;
@@ -160,7 +165,7 @@ export default class FlagCommand extends Command {
         await interaction.reply({ content: `:flag_white: \`${key}\` **is currently set to** \`${value.toString()}\` **for** \`!${node.hexId}\``, flags: MessageFlags.Ephemeral });
     }
 
-    private static async getNodeForUser(nodeId: string, interaction: ChatInputCommandInteraction): Promise<Node> {
+    private static async getNodeForUser(nodeId: string, interaction: ChatInputCommandInteraction): Promise<Node | null> {
         const node = await meshDB.client.node.findFirst({
             where: {
                 hexId: nodeId
@@ -169,18 +174,18 @@ export default class FlagCommand extends Command {
 
         if (!node) {
             await interaction.reply({ content: 'This node has not been seen yet by an MQTT gateway node', flags: MessageFlags.Ephemeral });
-            return;
+            return null;
         }
 
         // @todo
         if (!node.discordId) {
             await interaction.reply({ content: 'This node is not linked to anyone. If you own this node, use the `/linknode` command', flags: MessageFlags.Ephemeral });
-            return;
+            return null;
         }
 
         if (node.discordId !== interaction.user.id) {
             await interaction.reply({ content: 'This node does not belong to you', flags: MessageFlags.Ephemeral });
-            return;
+            return null;
         }
 
         return node;
