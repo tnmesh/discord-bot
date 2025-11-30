@@ -62,16 +62,17 @@ const processTextMessage = async (packetGroup: PacketGroup, client: Client, guil
 
   const balloonNode = await meshRedis.isBalloonNode(nodeId);
 
-  const content = await createDiscordMessage(packetGroup, text, balloonNode, client, guild);
-
   const getDiscordChannel = async (balloonNode, channelId) => {
+    // temp: return long fast channel (current default) for all presets
+    return lfChannel;
+
+
     if (balloonNode) {
       return habChannel;
     }
     if (channelId === "MediumSlow") {
       return msChannel;
     } else if (channelId === "LongFast") {
-      return lfChannel;
     } else if (channelId === "HAB") {
       return habChannel;
     } else {
@@ -79,9 +80,13 @@ const processTextMessage = async (packetGroup: PacketGroup, client: Client, guil
     }
   };
 
+  const channelId = packetGroup.serviceEnvelopes[0].channelId;
+
+  const content = await createDiscordMessage(packetGroup, text, balloonNode, client, guild, channelId);
+
   let discordChannel = await getDiscordChannel(
     balloonNode,
-    packetGroup.serviceEnvelopes[0].channelId,
+    channelId,
   );
 
   if (discordChannel === null) {

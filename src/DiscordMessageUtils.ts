@@ -4,13 +4,12 @@ import meshRedis from "./MeshRedis";
 import logger from "./Logger";
 import { DecodedPosition, decodedPositionToString, PacketGroup } from "./MeshPacketCache";
 import { Position } from "..";
-import PositionCommand from "@commands/PositionCommand";
 import meshDB from "MeshDB";
 import { Flag, Node } from "generated/prisma/client";
 import { FlagRepository } from "@repositories/FlagRepository";
 import { FlagProperties, Flags } from "Flags";
 
-export const createDiscordMessage = async (packetGroup: PacketGroup, text: string, balloonNode: boolean, client: Client, guild: Guild) => {
+export const createDiscordMessage = async (packetGroup: PacketGroup, text: string, balloonNode: boolean, client: Client, guild: Guild, channelId: string) => {
   try {
     const packet = packetGroup.serviceEnvelopes[0].packet;
     const from = nodeId2hex(packet.from);
@@ -254,6 +253,9 @@ export const createDiscordMessage = async (packetGroup: PacketGroup, text: strin
           title: `${nodeInfos[nodeIdHex] ? nodeInfos[nodeIdHex].shortName : "UNK"}`,
           description: msgText,
           fields: [...infoFields, ...gatewayFields2].slice(0, 25),
+          footer: {
+            text: `Channel: #${channelId}`
+          }
         },
       ],
     };
