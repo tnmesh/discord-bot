@@ -21,8 +21,8 @@ export default class MqttCommand extends CommandMessage {
             .setTitle('Current MQTT Details')
             .addFields(
                 { name: 'MQTT Host', value: 'mqtt.tnmesh.org', inline: true },
-                { name: 'MQTT Username', value: 'mqtt', inline: true },
-                { name: 'MQTT Password', value: 'meshville', inline: true },
+                { name: 'MQTT Username', value: 'meshdev', inline: true },
+                { name: 'MQTT Password', value: 'large4cats', inline: true },
                 { name: '`Primary` Channel Uplink', value: 'enabled' },
                 { name: 'OK to MQTT', value: 'enabled' },
                 { name: 'West Topic', value: 'msh/US/TN/West', inline: true },
