@@ -79,7 +79,7 @@ export const createDiscordMessage = async (packetGroup: PacketGroup, text: strin
       }
       ownerField = {
         name: "Owner",
-        value: userMention(user.id),
+        value: userMention(guildUser.id),
         inline: false,
       };
     }
