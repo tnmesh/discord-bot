@@ -1,5 +1,5 @@
 import { GuildMember, User as DiscordUser, userMention, Guild, Client } from "discord.js";
-import { nodeHex2id, nodeId2hex } from "./NodeUtils";
+import { nodeHex2id, nodeId2hex, validateNodeId } from "./NodeUtils";
 import meshRedis from "./MeshRedis";
 import logger from "./Logger";
 import { DecodedPosition, decodedPositionToString, PacketGroup } from "./MeshPacketCache";
@@ -32,23 +32,42 @@ export const createDiscordMessage = async (packetGroup: PacketGroup, text: strin
       return hopStart > acc ? hopStart : acc;
     }, 0);
 
-    const discordUserId = await meshRedis.getDiscordUserId(nodeIdHex);
-    logger.info(`nodeIdHex: ${nodeIdHex}, discordUserId: ${discordUserId}`);
+    const getNodeOwner = async (hexId: string): Promise<string | null> => {
+      const nodeId = validateNodeId(hexId);
+
+      if (nodeId === null) {
+        return null;
+      }
+
+      let payload: Node = await meshDB.client.node.findFirst({
+        where: {
+          hexId: nodeId
+        }
+      });
+
+      if (payload && payload.discordId) {
+        return payload.discordId;
+      }
+      return null;
+    }
+
+    const nodeOwner = await getNodeOwner(nodeIdHex.replace('!', ''));
+    logger.info(`nodeIdHex: ${nodeIdHex}, discordUserId: ${nodeOwner}`);
 
     let ownerField;
-    if (discordUserId) {
+    if (nodeOwner) {
       let guildUser: GuildMember | DiscordUser | undefined;
-      const user: DiscordUser = await client.users.fetch(discordUserId);
+      const user: DiscordUser = await client.users.fetch(nodeOwner);
 
       try {
-        guildUser = await guild.members.fetch(discordUserId);
+        guildUser = await guild.members.fetch(nodeOwner);
       } catch (e) {
         logger.error(e);
       }
 
       if (!guildUser) {
         logger.error(
-          `User ${discordUserId} not found in guild, using global user.`,
+          `User ${nodeOwner} not found in guild, using global user.`,
         );
 
         guildUser = user;
@@ -60,7 +79,7 @@ export const createDiscordMessage = async (packetGroup: PacketGroup, text: strin
       }
       ownerField = {
         name: "Owner",
-        value: userMention(user.id),
+        value: userMention(guildUser.id),
         inline: false,
       };
     }
