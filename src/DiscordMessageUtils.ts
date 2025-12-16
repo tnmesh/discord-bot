@@ -273,7 +273,7 @@ export const createDiscordMessage = async (packetGroup: PacketGroup, text: strin
           description: msgText,
           fields: [...infoFields, ...gatewayFields2].slice(0, 25),
           footer: {
-            text: `Channel: #${channelId}`
+            text: `#${channelId}`
           }
         },
       ],
