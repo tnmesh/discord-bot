@@ -22,13 +22,9 @@ export default class UnlinkNodeCommand extends Command {
             return;
         }
 
-        const nodeHasOwner: boolean = await this.nodeHasOwner(nodeId);
+        const nodeBelongsToUser: boolean = await this.nodeBelongsToUser(nodeId, interaction);
 
-        if (nodeHasOwner === true) {
-            await interaction.reply({
-                content: "This node is already linked to an account",
-                flags: MessageFlags.Ephemeral,
-            });
+        if (nodeBelongsToUser === false) {
             return;
         }
 
