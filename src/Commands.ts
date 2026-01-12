@@ -8,7 +8,7 @@ import AddBalloonCommand from "./commands/AddBalloonCommand";
 import RemoveBalloonCoomand from "./commands/RemoveBalloonCommand";
 import BanNodeCommand from "./commands/BanNodeCommand";
 import UnbanNodeCommand from "./commands/UnbanNodeCommand";
-// import NodesCommand from "./commands/NodesCommand";
+import NodesCommand from "./commands/NodesCommand";
 import CommandMessage from "./commands/message/CommandMessage";
 import MqttCommand from "./commands/message/MqttCommand";
 // import TestCommand from "./commands/TestCommand";
@@ -169,6 +169,19 @@ export const commands: CommandType[] = [
         type: ApplicationCommandOptionType.String,
         description: "The hex or integer node ID to view",
         required: true,
+      },
+    ],
+  },
+  {
+    name: "nodes",
+    description: "View information for a node that has been seen by an MQTT gateway",
+    class: new NodesCommand,
+    options: [
+      {
+        name: "user",
+        type: ApplicationCommandOptionType.User,
+        description: "The user to lookup nodes for",
+        required: false,
       },
     ],
   },
