@@ -39,8 +39,9 @@ model NodeInfo {
 }
 
 model Links {
-  id        Int     @id @default(autoincrement())
-  url       String  @unique
-  type      String
-  guildId   String  @unique
+  id          Int     @id @default(autoincrement())
+  url         String
+  type        String
+  guildId     String
+  isAffiliate Boolean @default(false)
 }

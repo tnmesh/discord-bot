@@ -52,6 +52,15 @@ export default class LinkCommandMessage extends CommandMessage {
 
                 this.deleteLink(channel, subCommandArgument);
                 break;
+            // case 'set-affiliate':
+            //     if (subCommandArgument === undefined || !['true', 'false'].includes(subCommandArgument.toLowerCase())) {
+            //         await channel.send(`Usage: !${this.name} set-affiliate <true|false>`);
+            //         return;
+            //     }
+
+            //     const flag = subCommandArgument === 'true';
+            //     this.setAffiliateFlag(channel, flag);
+            //     break;
             default:
                 await channel.send(`Unrecongnized sub-command: ${subCommand}`);
         }
@@ -93,6 +102,27 @@ export default class LinkCommandMessage extends CommandMessage {
         })
     }
 
+    // private async setAffiliateFlag(channel: TextChannel, flag: boolean): Promise<void> {
+    //     return await meshDB.client.links.update({
+    //         data: {
+    //             isAffiliate: flag
+    //         },
+    //         where: {
+    //             type: this.name,
+    //             guildId: channel.guildId,
+    //         }
+    //     }).then(() => {
+    //         if (flag) {
+    //             channel.send(`!${this.name} is marked as affiliate`);
+    //             return;
+    //         }
+
+    //         channel.send(`!${this.name} is no longer marked as affiliate`);
+    //     }, () => {
+    //         channel.send('Link not found matching URL');
+    //     })
+    // }
+
     /**
      * Display links for tag
      * @param channel
@@ -110,11 +140,27 @@ export default class LinkCommandMessage extends CommandMessage {
             return;
         }
 
-        let content: string = '';
+        let hasAffiliate = false;
+
+        let rows = [];
         links.forEach(link => {
-            content += `- <${link.url}>\n`
+            rows.push(`- ${link.url}`);
+            hasAffiliate ||= link.isAffiliate
         });
 
-        await channel.send(content);
+        if (rows.length === 1) {
+            rows = [];
+            rows.push(`${links[0].url}`);
+        }
+
+        if (hasAffiliate) {
+            if (rows.length === 1) {
+                rows.unshift('Support our infrastructure by using our affiliate link!');
+            } else {
+                rows.unshift('Support our infrastructure by using our affiliate links!');
+            }
+        }
+
+        await channel.send(rows.join('\n'));
     }
 }
