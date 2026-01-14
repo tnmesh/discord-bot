@@ -19,6 +19,7 @@ import WhoisMessageCommand from "./commands/message/WhoisMessageCommand";
 // import PositionCommand from "@commands/PositionCommand";
 import { Flags } from "Flags";
 import FlagCommand from "@commands/FlagCommand";
+import LinksMessageCommand from "@commands/message/LinksMessageCommand";
 
 export type CommandType = {
   name: string;
@@ -51,6 +52,11 @@ export const messageCommands: CommandMessageType[] = [
     name: "whois",
     description: "View information for a node that has been seen by an MQTT gateway",
     class: new WhoisMessageCommand
+  },
+  {
+    name: "links",
+    description: "Show all available link commands",
+    class: new LinksMessageCommand
   }
 ];
 
