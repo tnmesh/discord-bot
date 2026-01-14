@@ -32,8 +32,6 @@ export default class LinksMessageCommand extends CommandMessage {
             })
         })
 
-        // let channel: TextChannel = <TextChannel>message.channel;
-
         const pagination = new Pagination(message);
         pagination.setFields(fields);
         pagination.setTitle('Available Links')
